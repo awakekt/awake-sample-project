@@ -62,7 +62,7 @@ jobs:
 
       - name: Render the scene headless (Vulkan, lavapipe) and compare to the baseline
         working-directory: project
-        run: ./gradlew :app:desktopApp:test --console=plain
+        run: ./gradlew :app:desktopApp:test --console=plain --stacktrace
 
       - name: Upload the render
         if: always()
@@ -70,6 +70,14 @@ jobs:
         with:
           name: render-baseline
           path: project/app/desktopApp/build/render-baseline/actual.png
+          if-no-files-found: ignore
+
+      - name: Upload the render test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: render-test-report
+          path: project/app/desktopApp/build/reports/tests/test
           if-no-files-found: ignore
 
       - name: Upload the Android debug APK
