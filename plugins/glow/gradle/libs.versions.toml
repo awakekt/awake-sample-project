@@ -1,0 +1,25 @@
+[versions]
+kotlin = "2.4.10"
+kotlinx-serialization = "1.11.0"
+kotlinx-coroutines = "1.11.0"
+agp = "9.0.1"
+android-compileSdk = "36"
+android-minSdk = "33"
+# Awake Core release this plugin compiles and is tested against.
+awake = "0.11.1"
+
+[libraries]
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+awake-asset-shader-document = { module = "com.awakekt.awake.asset:shader-document", version.ref = "awake" }
+awake-scene-document = { module = "com.awakekt.awake.scene:document", version.ref = "awake" }
+awake-scene-binding = { module = "com.awakekt.awake.scene:binding", version.ref = "awake" }
+awake-scene-core = { module = "com.awakekt.awake.scene:scene-core", version.ref = "awake" }
+awake-ecs = { module = "com.awakekt.awake:ecs", version.ref = "awake" }
+awake-project-runtime = { module = "com.awakekt.awake.project:runtime", version.ref = "awake" }
+
+[plugins]
+androidKotlinMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
