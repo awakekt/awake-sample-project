@@ -1,0 +1,81 @@
+name: CI
+
+# Publishes the glow plugin to a repo-local Maven directory, builds the project against it, renders
+# its scene headless on Vulkan (Mesa's lavapipe -- ubuntu-latest has no GPU) and compares it to a
+# committed baseline, and builds the Android APK. See README.md for what this proves and what it
+# doesn't yet (the matrix there names the Studio issue blocking each unproven cell).
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  JAVA_VERSION: '17'
+
+jobs:
+  build:
+    name: Publish glow, build and render the project
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # mesa-vulkan-drivers provides lavapipe's ICD, a real, fully-conformant software Vulkan
+      # implementation; with no GPU on the runner, it's the only one the loader finds, which is
+      # exactly what a headless render needs. libglfw3-dev matches Core's own CI, though this
+      # workflow only links the backend's published jar, not its native sources.
+      - name: Install Vulkan (lavapipe)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libvulkan-dev libglfw3-dev mesa-vulkan-drivers
+
+      - name: Publish the glow plugin (repo-local Maven)
+        working-directory: plugins/glow
+        run: ./gradlew publishAllPublicationsToLocalRepository --console=plain
+
+      - name: Glow plugin tests (compiles and checks its ASL document)
+        working-directory: plugins/glow
+        run: ./gradlew jvmTest --console=plain
+
+      - name: Build the project (desktop, Android)
+        working-directory: project
+        run: ./gradlew :app:desktopApp:assemble :app:androidApp:assembleDebug --console=plain
+
+      - name: Project's own orbit-motion capability tests
+        working-directory: project
+        run: ./gradlew :app:shared:jvmTest --console=plain
+
+      - name: Render the scene headless (Vulkan, lavapipe) and compare to the baseline
+        working-directory: project
+        run: ./gradlew :app:desktopApp:test --console=plain
+
+      - name: Upload the render
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: render-baseline
+          path: project/app/desktopApp/build/render-baseline/actual.png
+          if-no-files-found: ignore
+
+      - name: Upload the Android debug APK
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-debug-apk
+          path: project/app/androidApp/build/outputs/apk/debug/*.apk
+          if-no-files-found: ignore
