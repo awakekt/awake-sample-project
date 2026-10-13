@@ -1,0 +1,19 @@
+{
+  "formatVersion": 1,
+  "id": "com.awakekt.samples.project.sample",
+  "name": "Awake Sample",
+  "version": "1.0.0",
+  "entryScene": "scenes/main.scene.json",
+  "plugins": [
+    {
+      "id": "com.awakekt.samples.glow",
+      "version": "0.1.0",
+      "artifact": { "group": "com.awakekt.samples", "name": "glow", "version": "0.1.0" },
+      "capabilityClass": "com.awakekt.samples.glow.GlowCapability"
+    },
+    {
+      "id": "com.awakekt.samples.project.orbit",
+      "capabilityClass": "com.awakekt.samples.project.orbit.OrbitMotionCapability"
+    }
+  ]
+}

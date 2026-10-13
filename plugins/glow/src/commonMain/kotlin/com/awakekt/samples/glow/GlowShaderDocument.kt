@@ -25,7 +25,7 @@ internal object GlowShaderDocument {
           "name": "glow-emissive",
           "surface": "plane",
           "blend": "additive",
-          "plane": { "size": [1.0, 1.0], "segments": 1 },
+          "plane": { "size": [2.4, 2.4], "segments": 1 },
           "parameters": [
             { "name": "tint", "type": "color", "default": [1.0, 0.6, 0.1, 1.0] },
             { "name": "intensity", "type": "float", "default": [1.5] },
