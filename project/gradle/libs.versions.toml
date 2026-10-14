@@ -15,7 +15,7 @@ kotlin = "2.4.10"
 kotlinx-coroutines = "1.11.0"
 material3 = "1.11.0-alpha07"
 # Core modules and Vulkan backend use independent version trains.
-awake = "0.11.1"
+awake = "0.12.0"
 awake-vulkan = "0.1.28"
 # The glow plugin (plugins/glow in this repository), resolved from its repo-local Maven directory.
 awake-samples-glow = "0.1.0"

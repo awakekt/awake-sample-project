@@ -6,7 +6,7 @@ agp = "9.0.1"
 android-compileSdk = "36"
 android-minSdk = "33"
 # Awake Core release this plugin compiles and is tested against.
-awake = "0.11.1"
+awake = "0.12.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
