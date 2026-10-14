@@ -39,12 +39,15 @@ lavapipe; see `.github/workflows/ci.yml`.
 
 ## CI
 
+[![CI](https://github.com/awakekt/awake-sample-project/actions/workflows/ci.yml/badge.svg)](https://github.com/awakekt/awake-sample-project/actions/workflows/ci.yml)
+
 `.github/workflows/ci.yml` publishes glow, builds the project, runs the project's own capability
 tests, builds the Android debug APK, and plays the scene headless on Vulkan (Mesa's lavapipe --
-ubuntu-latest has no GPU) to compare it against a committed baseline with a small per-channel
-tolerance, uploading the render either way. WebGPU/web is dropped from this phase: the WebGPU
-snapshot build for this Core release isn't published (see "Known limits" below), and web export is
-blocked on Studio's own side regardless (#331, #442).
+ubuntu-latest has no GPU) to compare it against a committed baseline
+(`project/app/desktopApp/src/test/resources/render-baseline/main-scene.png`, recorded from CI's own
+lavapipe run) with a small per-channel tolerance, uploading the render either way. WebGPU/web is
+dropped from this phase: the WebGPU snapshot build for this Core release isn't published, independent
+of Studio's own web-export gap (#331, #442).
 
 ## Matrix
 
@@ -90,17 +93,24 @@ Studio can't resolve the plugin.
 ## Known limits
 
 - **WebGPU/web dropped for phase 1.** The WebGPU snapshot this Core release would pin
-  (`<version>-SNAPSHOT`) isn't published for 0.12.0 at the time of writing, independent of Studio's
-  own web-export gap (#331, #442). `app/webApp` is left out of `project/` until that's back and web
+  (`<version>-SNAPSHOT`) isn't published at the time of writing, independent of Studio's own
+  web-export gap (#331, #442). `app/webApp` is left out of `project/` until that's back and web
   export is unblocked.
-- **Naga desktop native (Core-side, found and already fixed).** Building and headless-rendering this
-  repository's own scene on ubuntu-latest first failed with a published-artifact gap, not anything in
-  this repository: `com.awakekt.awake.asset:shader-compiler-desktop` embedded the Naga native shader
-  compiler for macOS only, so `VulkanEngine` can't start on Linux (or Windows) from Maven Central
-  alone. Filed and already fixed upstream:
-  [awakekt/awake#795](https://github.com/awakekt/awake/issues/795), fixed by
-  [awakekt/awake#798](https://github.com/awakekt/awake/pull/798), shipping in Core 0.12.0. This
-  repository pins 0.12.0 once it finishes publishing to Maven Central.
+- **Two Core/Vulkan packaging gaps, found while getting CI green, both worked around or already
+  fixed:**
+  1. `com.awakekt.awake.asset:shader-compiler-desktop` 0.11.x embedded the Naga native shader
+     compiler for macOS only, so `VulkanEngine` couldn't start on Linux (or Windows) from Maven
+     Central alone -- fatal for this repository's headless render on ubuntu-latest. Filed and
+     already fixed upstream: [awakekt/awake#795](https://github.com/awakekt/awake/issues/795),
+     fixed by [awakekt/awake#798](https://github.com/awakekt/awake/pull/798), shipped in Core
+     0.12.0, which this repository pins.
+  2. `com.awakekt.awake.backend:vulkan` has its own, independent version train, and its published
+     0.1.28 POM requests `shader-compiler-desktop:0.11.0` regardless of which newer Core version a
+     consumer pins -- so pinning 0.12.0 alone wasn't enough; Gradle still resolved the old,
+     macOS-only native transitively. `project/app/desktopApp/build.gradle.kts` adds a dependency
+     constraint aligning it to the pinned Core version, Gradle's ordinary mechanism for this. A
+     future Vulkan release that bumps its own Core pin would make the constraint redundant, not
+     wrong, so it's safe to leave in place.
 
 ## License
 
