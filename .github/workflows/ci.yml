@@ -62,15 +62,7 @@ jobs:
 
       - name: Render the scene headless (Vulkan, lavapipe) and compare to the baseline
         working-directory: project
-        run: ./gradlew :app:desktopApp:test --console=plain --stacktrace
-
-      - name: Diagnose the resolved shader-compiler-desktop jar
-        if: always()
-        run: |
-          jar="$(find ~/.gradle/caches -ipath '*shader-compiler-desktop*0.12.0*' -name '*.jar' | head -1)"
-          echo "Resolved jar: $jar"
-          if [ -n "$jar" ]; then unzip -l "$jar" | grep -i natives || echo "no natives/ entries in $jar"; else echo "no matching jar found in the Gradle cache at all"; fi
-          find ~/.gradle/caches -ipath '*shader-compiler-desktop*' -maxdepth 10 | head -40
+        run: ./gradlew :app:desktopApp:test --console=plain -Dawake.recordBaseline=true
 
       - name: Upload the render
         if: always()
@@ -78,6 +70,16 @@ jobs:
         with:
           name: render-baseline
           path: project/app/desktopApp/build/render-baseline/actual.png
+          if-no-files-found: ignore
+
+      # One-off: downloaded and committed by hand as the real baseline, then this step and
+      # -Dawake.recordBaseline=true above come back out.
+      - name: Upload the recorded baseline
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: recorded-baseline
+          path: project/app/desktopApp/src/test/resources/render-baseline/main-scene.png
           if-no-files-found: ignore
 
       - name: Upload the render test report

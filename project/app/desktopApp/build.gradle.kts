@@ -17,6 +17,14 @@ dependencies {
 
     implementation(libs.compose.uiToolingPreview)
 
+    // awake-backend-vulkan has its own, independent version train (see the version catalog), so its
+    // published POM requests whatever Core version it was built against -- 0.11.0's
+    // shader-compiler-desktop here, which shipped the Naga native for macOS only
+    // (awakekt/awake#795). Align it to the Core version this project pins, which has the fix.
+    constraints {
+        implementation("com.awakekt.awake.asset:shader-compiler-desktop:${libs.versions.awake.asProvider().get()}")
+    }
+
     // A headless render, for RenderBaselineTest: the same project (loaded with its own capabilities,
     // unlike `awake render`, which only resolves Core's) played off-screen and read back as pixels.
     testImplementation(libs.awake.engine.platform)
@@ -80,4 +88,9 @@ fun Task.useHomebrewVulkanOnMac() {
 }
 
 tasks.withType<JavaExec>().configureEach { useHomebrewVulkanOnMac() }
-tasks.withType<Test>().configureEach { useHomebrewVulkanOnMac() }
+tasks.withType<Test>().configureEach {
+    useHomebrewVulkanOnMac()
+    // Forwarded into the test JVM Gradle forks for `Test`, which doesn't inherit `-D` on its own:
+    // RenderBaselineTest's -Dawake.recordBaseline=true re-records its baseline from this machine.
+    System.getProperty("awake.recordBaseline")?.let { systemProperty("awake.recordBaseline", it) }
+}

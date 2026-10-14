@@ -43,6 +43,7 @@ class RenderBaselineTest {
                 ImageIO.write(actual, "png", actualFile)
 
                 if (System.getProperty("awake.recordBaseline") == "true") {
+                    BASELINE.parentFile.mkdirs()
                     ImageIO.write(actual, "png", BASELINE)
                     return@runBlocking
                 }
