@@ -110,7 +110,8 @@ Studio can't resolve the plugin.
      macOS-only native transitively. `project/app/desktopApp/build.gradle.kts` adds a dependency
      constraint aligning it to the pinned Core version, Gradle's ordinary mechanism for this. A
      future Vulkan release that bumps its own Core pin would make the constraint redundant, not
-     wrong, so it's safe to leave in place.
+     wrong, so it's safe to leave in place. Filed:
+     [awakekt/awake#811](https://github.com/awakekt/awake/issues/811).
 
 ## License
 
