@@ -60,6 +60,13 @@ jobs:
         working-directory: project
         run: ./gradlew :app:shared:jvmTest --console=plain
 
+      - name: Diagnose the resolved shader-compiler-desktop jar
+        working-directory: project
+        run: |
+          jar="$(find ~/.gradle/caches -path '*shader-compiler-desktop*0.12.0*.jar' | head -1)"
+          echo "Resolved jar: $jar"
+          unzip -l "$jar" | grep -i natives || echo "no natives/ entries"
+
       - name: Render the scene headless (Vulkan, lavapipe) and compare to the baseline
         working-directory: project
         run: ./gradlew :app:desktopApp:test --console=plain --stacktrace
