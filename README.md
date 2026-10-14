@@ -52,43 +52,41 @@ of Studio's own web-export gap (#331, #442).
 ## Matrix
 
 Rows are a project's plugins; columns are where it has been proven to open and play. A green cell
-was checked by this repository's CI or, where noted, by hand against desktop Studio locally (not yet
-automated). A blocked cell names the issue that blocks it.
+was checked by this repository's CI or, where noted, programmatically against desktop Studio locally
+(not in CI). A blocked cell names the issue that blocks it.
 
 | | Desktop Studio | Web Studio | Desktop export | Android | Web | iOS |
 |---|---|---|---|---|---|---|
-| Public plugin (glow) | built and discovered; see "Desktop Studio check" | #442 | ✅ CI | ✅ CI | #331 | #289 |
+| Public plugin (glow) | ✅ (Studio 27940295, programmatic) | #442 | ✅ CI | ✅ CI | #331 | #289 |
 | Private plugin (owner / other) | #448 | #442, #448 | #448 | #448 | #331, #448 | #289, #448 |
 | Pro plugin (Pro / free) | #449 | #442, #449 | #449 | #449 | #331, #449 | #289, #449 |
-| Template with code (orbit motion) | built and discovered; see "Desktop Studio check" | #442 | ✅ CI | ✅ CI | #331 | #289 |
+| Template with code (orbit motion) | ✅ (Studio 27940295, programmatic) | #442 | ✅ CI | ✅ CI | #331 | #289 |
 
 The public plugin and "template with code" rows are the same CI run: the one scene uses both
 `glow_emissive` (the published plugin) and `orbit_motion` (this project's own `app/shared` code).
 
 ## Desktop Studio check (local, not CI)
 
-Opening `project/app/shared/src/commonMain/resources/project` in a desktop Studio built from
-`awakekt/awake-studio`'s `origin/main` (a fresh worktree, no local Core build needed since this
-project resolves Core from Maven Central): Studio's own log confirmed
+Checked against `awakekt/awake-studio` at `27940295` (Core 0.12.0) by a throwaway desktop test in a
+Studio worktree, headless, with no mouse or keyboard. With glow published to `plugins/glow/build/repo`
+first, the test opens `project/app/shared/src/commonMain/resources/project` through Studio's own
+startup open and code-consent path, as Studio's `ProjectCapabilitiesDesktopTest` does, on a renderer
+that draws nothing and records the content features attached to it:
 
-```
-studio.discovery  Discovered project 'Awake Sample' at '.../project' with 1 scenes
-```
+1. Answering yes, Studio runs this project's own `./gradlew :app:shared:awakeStudioCode`, rebuilding
+   the `shared-jvm.jar` the test had deleted, and loads both capabilities,
+   `com.awakekt.samples.glow` and `com.awakekt.samples.project.orbit`, in the project's own class loader.
+2. `CubeGlow`'s `glow_emissive` decodes as `GlowEmissiveSource` and `Orbiter`'s `orbit_motion` as
+   `OrbitMotion`; neither is kept as unknown data.
+3. Within 2 Play frames the `Orbiter` moves off (2, 0.5, 0) and glow's system attaches its
+   `glow-emissive` content feature, which Stop detaches. The edited world's `Orbiter` stays put.
+4. Opening another project drops both capabilities and the project's component registry.
+5. Control: answering no, the scene opens with both components kept as data, and 120 Play frames
+   leave the `Orbiter` at (2, 0.5, 0) with nothing attached.
 
-Reading Studio's own `AppProjectBuild.kt` / `PlatformPluginLoader.desktop.kt` /
-`StudioEditorBridge.kt` shows it loads a project's capabilities by shelling out to the project's own
-`./gradlew :app:shared:awakeStudioCode` and then resolving each `capabilityClass` from the printed
-runtime classpath -- the same, uniform mechanism for an `artifact`-named plugin (glow) and a
-no-`path` one (orbit motion), since both already sit on `app/shared`'s own dependency graph. That
-graph, including glow's repo-local Maven directory, is exactly what this repository's own CI already
-builds successfully, so there's no Studio-specific resolution step left to fail.
-
-What wasn't completed: clicking through Studio's own code-consent prompt, Play, and a screenshot.
-The only display available in this environment is the operator's own live desktop, shared at the time
-with several other concurrent sessions (visible background builds, an open system dialog); driving
-mouse/keyboard automation on it to finish this one interactive step wasn't a safe thing to do. This
-is an environment limitation of this check, not a defect found in Studio -- nothing above suggests
-Studio can't resolve the plugin.
+There is no screenshot: Studio's headless screen path captures its UI only and leaves the 3D viewport
+empty. This repository's CI render covers the scene's pixels. The test isn't kept in Studio, since it
+reads this repository from a local checkout.
 
 ## Known limits
 
